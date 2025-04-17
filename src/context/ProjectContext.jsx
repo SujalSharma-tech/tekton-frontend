@@ -110,10 +110,25 @@ export const ProjectProvider = ({ children }) => {
 
   // Modify fetchProjects to check for token
 
+  const isTokenExpired = (token) => {
+    if (!token) return true;
+
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const expiry = payload.exp;
+    const now = Math.floor(Date.now() / 1000); // current time in seconds
+
+    return now > expiry;
+  };
+
   const fetchProjects = async () => {
     // Skip if no token exists
     const token = localStorage.getItem("token");
     if (!token) {
+      return [];
+    }
+    if (isTokenExpired(token)) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
       return [];
     }
 
